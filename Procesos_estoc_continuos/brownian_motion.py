@@ -3,6 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
+###########Editar funciones, cambiar por las del notebook que tienen agregado poder crear más de un solo vector
 def get_dW(T: int, random_state: Optional[int] = None) -> np.ndarray:
     """
     Sample T times from a normal distribution,
