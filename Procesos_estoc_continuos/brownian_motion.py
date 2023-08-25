@@ -4,34 +4,43 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
+def get_dB(n: int, Ts: float=1 , d: int =1, random_state: Optional[int] = None) -> np.ndarray:
+    """
+    Recibe:
+    n: número deseado de incrementos.
+    Ts: varianza=tiempo de muestreo (t-s). Por defecto =1
+    d: número de procesos independientes buscadas. Por defecto =1
+    Optional random_state to reproduce results.
+    Retorna:
+    dW: Una matriz de dimensiones dxn, cada una de las d filas será un vector de n muestreos de 
+    una normal, es decir, una matriz cuyas filas son incrementos de un MBEU
+    """
+    np.random.seed(random_state)
+    sample=np.random.normal(0.0, Ts**(1/2), (d,n-1))#Ts es la varianza, d-1 porque al final agrego condición inicial
+    B_0=np.zeros((d,1)) #Fila de ceros. Cada proceso (columna) se inicializa en 0
+    dB=np.concatenate((B_0,sample),axis=1) #Agrego los estados iniciales como primer vector columna
+    return dB
 
-# def get_dW(n: int, Ts: float=1 , d: int =1, random_state: Optional[int] = None) -> np.ndarray:
-#     """
-#     Una matriz de d columnas, cada una siendo un vector de n muestreos de tiempos de una distribución
-#     normal para simular incrementos discretos dW de un proceso de Weiner o Mov Browninano.
-#     Optional random_state to reproduce results.
-#     Asumo tiempo de muestreo Ts constante por lo que la varianza de las muestras es
-#     constante (1 por defecto).
-#     """
-#     np.random.seed(random_state)
-#     sample=np.random.normal(0.0, Ts**(1/2), (n-1,d))#Ts es la varianza
-#     W_0=np.zeros((1,d)) #Fila de ceros. Cada proceso (columna) se inicializa en 0
-#     dW=np.concatenate((W_0,sample),axis=0) #Agrego el punto inicial 0 de partida (para cada vector)
-#     return dW
-
-# def get_W(n: int, Ts: float, d:int = 1,random_state: Optional[int] = None) -> np.ndarray:
-#     """
-#     Simula d movimientos Brownianos de n muestras sampleadas en intervalos Ts unidades de tiempo.
-#     Retorna cada columnda de la matriz como el vector de sumas acumuladas.
-#     """
-#     dW = get_dW(n,Ts=Ts,d=d,random_state=random_state)  
+def get_B(n: int, Ts: float=1, d:int = 1,random_state: Optional[int] = None) -> np.ndarray:
+    """
+    Recibe:
+    n: tamaño de muestras deseadas.
+    d: número de trayectorias muestreadas a intervalos Ts unidades de tiempo.
+    Retorna:
+    Matriz dxn con cada fila de la matriz como el vector de sumas acumuladas de los incrementos.
+    """
+    dB = get_dB(n,Ts=Ts,d=d,random_state=random_state)  #Cambiar por dB y B
     
-#     return np.cumsum(dW,axis=0) #Cum sum retorna un vector y cada entrada se convierte en la suma acumulada
+    return np.cumsum(dB,axis=1) #Cum sum retorna un vector y cada entrada se convierte en la suma acumulada
 
-# def quadratic_variation(W):
-#     """Devuelve la matriz con las variaciones cuadráticas de cada columna (mov browniano) de W"""
-#     return np.cumsum(np.power(np.diff(W,axis=0,prepend=0),2),axis=0)
+def quadratic_variation(B):
+    """Devuelve la matriz con las variaciones cuadráticas de cada fila (mov browniano) de W"""
+    return np.cumsum(np.power(np.diff(B,axis=1,prepend=0),2),axis=1)
 
+
+
+
+###################3
 ###########Editar funciones, cambiar por las del notebook (comentadas) que tienen agregado poder crear más de un solo vector
 def get_dW(T: int, random_state: Optional[int] = None) -> np.ndarray:
     """
