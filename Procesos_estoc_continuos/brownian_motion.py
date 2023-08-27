@@ -6,12 +6,17 @@ import seaborn as sns
 
 """
 Convenciones:
-Aunque para plotear python asume columnas como cada trayectoria. Las matrices de los métodos son
-trayectoria por fila. Matrices tamaño (d x n) = (n_proc x tamaño_muestr)
-Por como está implementado (func get_dB), cada entrada de una trayectoria B (de get_B o get_B_matrix)
-B[i] es igual al proceso en el tiempo i*dt: B_{i+dt}.
+Aunque para plotear python asume columnas como cada trayectoria. Las matrices de los métodos están formadas
+por trayectorias en cada fila. Matrices B de tamaño (d x n) = (n_proc x tamaño_muestr)
+
 El proceso de simulación en general será elegir un tiempo máximo T, un número de subintervalos s 
 lo que define dt=T/s e invocar las funciones get con n=s+1.
+O puede especificarse dt y n lo que condiciona T=n*dt.
+
+Por como está implementado (func get_dB), cada entrada de una trayectoria B (de get_B o get_B_matrix)
+B[i] es igual al proceso en el tiempo i*dt: B_{i+dt}.
+Cada fila (B[i,:]) es instancia del proceso estocástico, cada columna (B[:,j]) es instancia
+de la variable aleatoria B_{j*dt}.
 """
 
 def get_dB(n: int, dt: float=1 , random_state: Optional[int] = None) -> np.ndarray:
