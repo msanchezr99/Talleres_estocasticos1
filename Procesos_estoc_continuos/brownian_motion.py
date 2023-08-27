@@ -4,6 +4,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
+"""
+Convenciones:
+Aunque para plotear python asume columnas como cada trayectoria. Las matrices de los métodos son
+trayectoria por fila. Matrices tamaño (d x n) = (n_proc x tamaño_muestr)
+"""
+
 def get_dB(n: int, Ts: float=1 , random_state: Optional[int] = None) -> np.ndarray:
     """
     Recibe:
@@ -22,7 +28,7 @@ def get_B(n: int, Ts: float=1,random_state: Optional[int] = None) -> np.ndarray:
     """
     Recibe:
     n: tamaño de muestras deseadas.
-    d: número de trayectorias muestreadas a intervalos Ts unidades de tiempo.
+    Ts: unidades de tiempo.
     Retorna:
     Matriz dxn con cada fila de la matriz como el vector de sumas acumuladas de los incrementos.
     """
@@ -30,12 +36,20 @@ def get_B(n: int, Ts: float=1,random_state: Optional[int] = None) -> np.ndarray:
     
     return np.cumsum(dB) #Cum sum retorna un vector y cada entrada se convierte en la suma acumulada
 
+def dif_B(B:np.array)->np.array:
+    """Obtener vector dB o matriz de vectores dB a partir del vector o matriz B"""
+    if B.ndim==1:
+        dB=np.diff(B,prepend=0)
+    else: 
+        dB=np.diff(B,prepend=0,axis=1)
+    return dB
+
 def quadratic_variation(B):
     """Devuelve la matriz (o el vector en caso de dimensión 1) con las variaciones cuadráticas de cada fila (mov browniano) de W"""
     if B.ndim==1:
         qv=np.cumsum(np.power(np.diff(B,prepend=0),2))
     else: 
-        qv= np.cumsum(np.power(np.diff(B,axis=1,prepend=0),2),axis=1)
+        qv= np.cumsum(np.power(np.diff(B,prepend=0,axis=0),2),axis=1)
     return qv
 
 
@@ -47,8 +61,7 @@ def _get_correlated_dB(dB: np.ndarray, rho: float, Ts=1, random_state: Optional[
     rho: coeficiente de correlación.
     Ts: paso de muestreo.
     Retorna:
-    d vectores de incrementos de procesos brownianos correlacionado.
-    Sample correlated discrete Brownian increments to given increments dW.
+    Vector de incrementos de procesos browniano correlacionado al dB recibido..
     """
     dB2 = get_dB(len(dB), Ts=Ts, random_state=random_state)  # genera las d listas de incrementos.
     if np.array_equal(dB2, dB):
@@ -69,7 +82,7 @@ def _get_previous_dB(
     random_proc_idx = rng.choice(i)
     return dWs[random_proc_idx]
 
-def get_dB_matrix(
+def get_B_matrix(
     n: int,
     d: int,
     Ts:Optional[int]=1,
@@ -77,12 +90,14 @@ def get_dB_matrix(
     random_state: Optional[int] = None,
 ) -> np.ndarray:
     """
-    Matriz con d Brownianos dB, cada uno compuesto por n muestras de incrementos discretos.
-    Cada fila será un proceso, por lo que resulta una matriz (dxn).
-    Puede incluir correlación rho con la que se simularán los procesos a partir de alguno de los anteriormente simulados 
-    (proceso elegido por la función _get)
-    Retorna:
-
+    Recibe:
+    n: tamaño deseado por trayectoria.
+    d: número de trayectorias.
+    Ts: tamaño de paso.
+    rho: correlación (no es par a par, sino corr con la que se simularán los procesos a partir de alguno de los anteriormente simulados )
+    Retorna: 
+    Matriz (d x n): d trayectorias brownianas, cada una de tamaño n.(fila es un prceso)
+    
     """
     rng = np.random.default_rng(random_state) #Generador
     dBs: list[np.ndarray] = []
@@ -94,7 +109,4 @@ def get_dB_matrix(
             dB_previous = _get_previous_dB(dBs, i, rng)
             dB_i = _get_correlated_dB(dB_previous, rho, Ts=Ts,random_state=random_state_i)
         dBs.append(dB_i)
-    return np.asarray(dBs) #d vectores fila de incrementos.
-
-def get_B_matrix(dBs):
-    return np.cumsum(dBs,axis=1)#Por filas
+    return np.cumsum(np.asarray(dBs),axis=1) #d vectores fila, se suma por filas.
