@@ -10,7 +10,7 @@ Aunque para plotear python asume columnas como cada trayectoria. Las matrices de
 por trayectorias en cada fila. Matrices B de tamaño (d x n) = (n_proc x tamaño_muestr)
 
 El proceso de simulación en general será elegir un tiempo máximo T, un número de subintervalos s 
-lo que define dt=T/s e invocar las funciones get con n=s+1.
+lo que define dt=T/s e invocar las funciones get con n=s+1 y dt. Aunque dt será 1 por default
 O puede especificarse dt y n lo que condiciona T=n*dt.
 
 Por como está implementado (func get_dB), cada entrada de una trayectoria B (de get_B o get_B_matrix)
@@ -131,15 +131,17 @@ def get_B_matrix(
 
 def get_Bridge_matrix(n:int,d:int=1,random_state: Optional[int]=None)->np.array:
     """
-    Proceso Bridge entre 0 y 1
+    Proceso Bridge entre 0 y 1. Al recibir n, se induce dt=1/(n-1)
     Recibe:
     n: longitud trayectorias (condiciona dt)
     d: # de trayectorias
     (Usa time=np.linspace(0,1,n) como vector de tiempos)
     Devuelve:
     Matriz con cada fila un proceso browniano Bridge.
-   Relación índice en arreglo y tiempo: B[i]=B_{i*dt}"""
-    B=get_B_matrix(n,d,random_state=random_state)
+    Como T=1 en este proceso, se induce dt=1/n
+    Relación índice en arreglo y tiempo: B[i]=B_{i*dt}"""
+    dt=1/(n-1)
+    B=get_B_matrix(n,d,dt=dt,random_state=random_state)
     time=np.linspace(0,1,n)
     tB_1=np.array([time[i]*B[:,-1] for i in range(n)]).T #B[:,-1] es el vector con cada trayectoria en su t final (asumo 1) Se transpone porque cada elemento de la lista debe ser columna
     return B-tB_1 
