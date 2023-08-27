@@ -10,29 +10,29 @@ Aunque para plotear python asume columnas como cada trayectoria. Las matrices de
 trayectoria por fila. Matrices tamaño (d x n) = (n_proc x tamaño_muestr)
 """
 
-def get_dB(n: int, Ts: float=1 , random_state: Optional[int] = None) -> np.ndarray:
+def get_dB(n: int, dt: float=1 , random_state: Optional[int] = None) -> np.ndarray:
     """
     Recibe:
     n: número deseado de incrementos.
-    Ts: varianza=tiempo de muestreo (t-s). Por defecto =1
+    dt: varianza=tiempo de muestreo (t-s). Por defecto =1
     Optional random_state to reproduce results.
     Retorna:
     dW: Vector con n incrementos de un MBEU
     """
     np.random.seed(random_state)
-    sample=np.random.normal(0.0, Ts**(1/2), size=n-1)#Ts es la varianza, n-1 porque agrego luego condición inicial
+    sample=np.random.normal(0.0, dt**(1/2), size=n-1)#dt es la varianza, n-1 porque agrego luego condición inicial
     dB=np.insert(sample,0,0) #Agrego los estados iniciales como primer vector columna
     return dB
 
-def get_B(n: int, Ts: float=1,random_state: Optional[int] = None) -> np.ndarray:
+def get_B(n: int, dt: float=1,random_state: Optional[int] = None) -> np.ndarray:
     """
     Recibe:
     n: tamaño de muestras deseadas.
-    Ts: unidades de tiempo.
+    dt: unidades de tiempo.
     Retorna:
     Matriz dxn con cada fila de la matriz como el vector de sumas acumuladas de los incrementos.
     """
-    dB = get_dB(n,Ts=Ts,random_state=random_state)  #Cambiar por dB y B
+    dB = get_dB(n,dt=dt,random_state=random_state)  #Cambiar por dB y B
     
     return np.cumsum(dB) #Cum sum retorna un vector y cada entrada se convierte en la suma acumulada
 
@@ -54,16 +54,16 @@ def quadratic_variation(B):
 
 
 #Métodos auxiliares para matriz
-def _get_correlated_dB(dB: np.ndarray, rho: float, Ts=1, random_state: Optional[int] = None) -> np.ndarray:
+def _get_correlated_dB(dB: np.ndarray, rho: float, dt=1, random_state: Optional[int] = None) -> np.ndarray:
     """
     Recibe:
     Incrementos de browniano.
     rho: coeficiente de correlación.
-    Ts: paso de muestreo.
+    dt: paso de muestreo.
     Retorna:
     Vector de incrementos de procesos browniano correlacionado al dB recibido..
     """
-    dB2 = get_dB(len(dB), Ts=Ts, random_state=random_state)  # genera las d listas de incrementos.
+    dB2 = get_dB(len(dB), dt=dt, random_state=random_state)  # genera las d listas de incrementos.
     if np.array_equal(dB2, dB):
         # dB no puede ser igual a dB2.
         raise ValueError("Brownian Increment error, try choosing different random state.")
@@ -85,7 +85,7 @@ def _get_previous_dB(
 def get_B_matrix(
     n: int,
     d: int,
-    Ts:Optional[int]=1,
+    dt:Optional[int]=1,
     rho: Optional[float] = None,
     random_state: Optional[int] = None,
 ) -> np.ndarray:
@@ -93,7 +93,7 @@ def get_B_matrix(
     Recibe:
     n: tamaño deseado por trayectoria.
     d: número de trayectorias.
-    Ts: tamaño de paso.
+    dt: tamaño de paso.
     rho: correlación (no es par a par, sino corr con la que se simularán los procesos a partir de alguno de los anteriormente simulados )
     Retorna: 
     Matriz (d x n): d trayectorias brownianas, cada una de tamaño n.(fila es un prceso)
@@ -104,9 +104,33 @@ def get_B_matrix(
     for i in range(d):
         random_state_i = _vary_random_state_i(random_state, i)
         if i == 0 or rho is None:
-            dB_i = get_dB(n, Ts=Ts,random_state=random_state_i)
+            dB_i = get_dB(n, dt=dt,random_state=random_state_i)
         else:
             dB_previous = _get_previous_dB(dBs, i, rng)
-            dB_i = _get_correlated_dB(dB_previous, rho, Ts=Ts,random_state=random_state_i)
+            dB_i = _get_correlated_dB(dB_previous, rho, dt=dt,random_state=random_state_i)
         dBs.append(dB_i)
     return np.cumsum(np.asarray(dBs),axis=1) #d vectores fila, se suma por filas.
+
+
+
+
+
+
+#######################################################################################
+# Movimientos asociados
+#######################################################################################
+
+def get_bridge(n:int,d:int=1,random_state: Optional[int]=None)->np.array:
+    """
+    Proceso Bridge entre 0 y 1
+    Recibe:
+    n: longitud trayectorias (condiciona dt)
+    d: # de trayectorias
+    (Usa time=np.linspace(0,1,n) como vector de tiempos)
+    Devuelve:
+    Matriz con cada fila un proceso browniano Bridge.
+   Relación índice en arreglo y tiempo: B[i]=B_{i*dt}"""
+    B=get_B_matrix(n,d,random_state=random_state)
+    time=np.linspace(0,1,n)
+    tB_1=np.array([time[i]*B[:,-1] for i in range(n)]).T #B[:,-1] es el vector con cada trayectoria en su t final (asumo 1) Se transpone porque cada elemento de la lista debe ser columna
+    return B-tB_1 
