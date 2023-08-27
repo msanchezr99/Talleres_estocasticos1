@@ -63,8 +63,6 @@ def get_W(T: int, random_state: Optional[int] = None) -> np.ndarray:
 
 
 
-
-
 #Con correlación:
 
 def _get_correlated_dW(dW: np.ndarray, rho: float, random_state: Optional[int] = None) -> np.ndarray:
