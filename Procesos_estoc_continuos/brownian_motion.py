@@ -54,7 +54,7 @@ def quadratic_variation(B):
 
 
 #Métodos auxiliares para matriz
-def _get_correlated_dB(dB: np.ndarray, rho: float, dt=1, random_state: Optional[int] = None) -> np.ndarray:
+def _get_correlated_dB(dB: np.ndarray, rho: float, dt:Optional[float]=1, random_state: Optional[int] = None) -> np.ndarray:
     """
     Recibe:
     Incrementos de browniano.
@@ -85,7 +85,7 @@ def _get_previous_dB(
 def get_B_matrix(
     n: int,
     d: int,
-    dt:Optional[int]=1,
+    dt:Optional[float]=1,
     rho: Optional[float] = None,
     random_state: Optional[int] = None,
 ) -> np.ndarray:
