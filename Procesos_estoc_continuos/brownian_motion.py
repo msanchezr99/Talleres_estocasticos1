@@ -8,6 +8,10 @@ import seaborn as sns
 Convenciones:
 Aunque para plotear python asume columnas como cada trayectoria. Las matrices de los métodos son
 trayectoria por fila. Matrices tamaño (d x n) = (n_proc x tamaño_muestr)
+Por como está implementado (func get_dB), cada entrada de una trayectoria B (de get_B o get_B_matrix)
+B[i] es igual al proceso en el tiempo i*dt: B_{i+dt}.
+El proceso de simulación en general será elegir un tiempo máximo T, un número de subintervalos s 
+lo que define dt=T/s e invocar las funciones get con n=s+1.
 """
 
 def get_dB(n: int, dt: float=1 , random_state: Optional[int] = None) -> np.ndarray:
@@ -30,7 +34,7 @@ def get_B(n: int, dt: float=1,random_state: Optional[int] = None) -> np.ndarray:
     n: tamaño de muestras deseadas.
     dt: unidades de tiempo.
     Retorna:
-    Matriz dxn con cada fila de la matriz como el vector de sumas acumuladas de los incrementos.
+    Vector trayectoria de n entrada: sumas acumuladas de los incrementos.
     """
     dB = get_dB(n,dt=dt,random_state=random_state)  #Cambiar por dB y B
     
@@ -120,7 +124,7 @@ def get_B_matrix(
 # Movimientos asociados
 #######################################################################################
 
-def get_bridge(n:int,d:int=1,random_state: Optional[int]=None)->np.array:
+def get_Bridge_matrix(n:int,d:int=1,random_state: Optional[int]=None)->np.array:
     """
     Proceso Bridge entre 0 y 1
     Recibe:
