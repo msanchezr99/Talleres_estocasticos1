@@ -122,13 +122,22 @@ def get_B_matrix(
 
 
 
+def mbeu_mu_teor(tiempos):
+    """
+    Recibe:
+    tiempos: vector de tiempos. ("Verdaderos" índices de los B en las trayectorias)
+    Retorna:
+    
+    """
+    pass
+
 
 
 
 #######################################################################################
 # Movimientos asociados
 #######################################################################################
-
+######### Browniano Bridge
 def get_Bridge_matrix(n:int,d:int=1,random_state: Optional[int]=None)->np.array:
     """
     Proceso Bridge entre 0 y 1. Al recibir n, se induce dt=1/(n-1)
@@ -144,4 +153,37 @@ def get_Bridge_matrix(n:int,d:int=1,random_state: Optional[int]=None)->np.array:
     B=get_B_matrix(n,d,dt=dt,random_state=random_state)
     time=np.linspace(0,1,n)
     tB_1=np.array([time[i]*B[:,-1] for i in range(n)]).T #B[:,-1] es el vector con cada trayectoria en su t final (asumo 1) Se transpone porque cada elemento de la lista debe ser columna
-    return B-tB_1 
+    return B-tB_1
+
+#Propiedades teóricas 
+
+
+
+########## Ruido blanco
+def get_Gaussian_matrix(n:int, d:int, h: int=1, dt:float=1, random_state=None)->np.array:
+    """
+    Recibe:
+    n: tamaño por trayectoria.
+    d:
+    h: (h<n) tamaño del incremento temporal en número de pasos dt . (h*dt)
+    Retorna:
+    Matriz (d x n) con 
+    """
+    B=get_B_matrix(n+h,d,dt=dt,random_state=random_state)
+    if h>=n:
+        raise Exception("h>n")
+    White_noise=(B[:,:-h]-B[:,h:])/h
+    return White_noise
+
+
+#Propiedades teóricas
+
+
+########## Movimiento drift
+
+
+#Propiedades teóricas
+
+########## Movimiento browniano geométrico
+
+#Propiedades teóricas
