@@ -122,36 +122,19 @@ def get_B_matrix(
 
 
 ####################################################
-#Evaluación de funciones teóricas de esperanza, varianza y covarianza de variables aleatorias B_t
-#y estadísticos de matrices de muestra.
-def empiric_matrix_stats(B:np.array):
-    """
-    Recibe: 
-    B: matriz (d x n) de d trayectorias de dimensión n. 
-    Retorna: 
-    mu_hat_t: vector de función esperanza estimada (func de t) y
-    cov_hat_st: matriz que estima función de covarianza (func de s y t). 
-    En cada caso, mu_hat_t[i] será la estimación de E(W_{i*dt}) mientras que 
-    cov_hat_st[i,j] será estimación de Cov(W_{i*dt},W_{j*dt}) para el dt elegido al momento de simular.
+#Evaluación de funciones teóricas de esperanza, varianza y covarianza de variables aleatorias B_t.
 
-    """
-    if B.ndim==1:
-        raise Exception("Argument not a matrix")
-    else: 
-        d,n=B.shape
-        mu_hat_t=np.mean(B,axis=0)
-        cov_hat_st=np.cov(B,rowvar=False) #Puedo obtener la estimación de varianzas con np.diag(cov)
-    return mu_hat_t, cov_hat_st
-
-def mbeu_theoret_mu_var(tiempos:np.array)->tuple[np.array]:
+def mbeu_theoret_mu_cov(tiempos:np.array)->tuple[np.array]:
     """
     Recibe:
     tiempos: vector de tiempos. ("Verdaderos" índices de los B en las trayectorias)
     Retorna:
     Evaluación de función teórica de esperanza y varianza
     """
+    s_v,t_v=np.meshgrid(tiempos,tiempos)
     mu_teor=np.zeros(len(tiempos))
-    var_teor=tiempos
+    cov_teor=np.minimum(s_v,t_v)-np.multiply(s_v,t_v)
+    return mu_teor, cov_teor
     
 
 
@@ -199,7 +182,11 @@ def get_Gaussian_matrix(n:int, d:int, h: int=1, dt:float=1, random_state=None)->
 
 
 #Propiedades teóricas
-
+def w_noise_theoret_mu_cov(tiempos:np.array,h:float=1)->tuple[np.array]:
+    s_v,t_v=np.meshgrid(tiempos,tiempos)
+    mu_teor=np.zeros(len(tiempos))
+    cov_teor=(s_v+h-np.minimum(s_v+h,t_v))/h
+    return mu_teor, cov_teor
 
 ########## Movimiento drift
 
@@ -209,3 +196,25 @@ def get_Gaussian_matrix(n:int, d:int, h: int=1, dt:float=1, random_state=None)->
 ########## Movimiento browniano geométrico
 
 #Propiedades teóricas
+
+##################
+
+###Obtención de estadísticos de matriz de datos (d x n) tomando cada columna (tiempo t) como variable:
+def empiric_mu_cov(B:np.array):
+    """
+    Recibe: 
+    B: matriz (d x n) de d trayectorias de dimensión n. Los datos se asumen simulados en [0,T] con n+1 puntos (dt=T/n)
+    Retorna: 
+    mu_hat_t: vector de función esperanza estimada (func de t) y
+    cov_hat_st: matriz que estima función de covarianza (func de s y t). 
+    En cada caso, mu_hat_t[i] será la estimación de E(W_{i*dt}) mientras que 
+    cov_hat_st[i,j] será estimación de Cov(W_{i*dt},W_{j*dt}) para el dt elegido al momento de simular.
+    """
+    if B.ndim==1:
+        raise Exception("Argument not a matrix")
+    else: 
+        d,n=B.shape
+        mu_hat_t=np.mean(B,axis=0)
+        cov_hat_st=np.cov(B,rowvar=False) #Puedo obtener la estimación de varianzas con np.diag(cov)
+    return mu_hat_t, cov_hat_st
+
