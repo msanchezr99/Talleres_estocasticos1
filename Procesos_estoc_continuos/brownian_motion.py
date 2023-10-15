@@ -10,8 +10,8 @@ Aunque para plotear python asume columnas como cada trayectoria. Las matrices de
 por trayectorias en cada fila. Matrices B de tamaño (d x n) = (n_proc x tamaño_muestr)
 
 El proceso de simulación en general será elegir un tiempo máximo T, un número de subintervalos s 
-lo que define dt=T/s e invocar las funciones get con n=s+1 y dt. Aunque dt será 1 por default
-O puede especificarse dt y n lo que condiciona T=n*dt.
+lo que define dt=T/s e invocar las funciones get con n=s+1 y dt. Aunque dt será 1 por default, puede 
+especificarse dt y n lo que condiciona T=n*dt.
 
 Por como está implementado (func get_dB), cada entrada de una trayectoria B (de get_B o get_B_matrix)
 B[i] es igual al proceso en el tiempo i*dt: B_{i+dt}.
@@ -53,7 +53,7 @@ def dif_B(B:np.array)->np.array:
         dB=np.diff(B,prepend=0,axis=1)
     return dB
 
-def quadratic_variation(B):
+def quadratic_variation(B:np.array):
     """Devuelve la matriz (o el vector en caso de dimensión 1) con las variaciones cuadráticas de cada fila (mov browniano) de W"""
     if B.ndim==1:
         qv=np.cumsum(np.power(np.diff(B,prepend=0),2))
