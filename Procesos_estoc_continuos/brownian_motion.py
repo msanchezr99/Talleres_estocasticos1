@@ -19,6 +19,9 @@ Cada fila (B[i,:]) es instancia del proceso estocástico, cada columna (B[:,j]) 
 de la variable aleatoria B_{j*dt}.
 """
 
+
+
+#########Movimiento Browniano individual
 def get_dB(n: int, dt: float=1 , random_state: Optional[int] = None) -> np.ndarray:
     """
     Recibe:
@@ -44,24 +47,9 @@ def get_B(n: int, dt: float=1,random_state: Optional[int] = None) -> np.ndarray:
     dB = get_dB(n,dt=dt,random_state=random_state)  #Cambiar por dB y B
     
     return np.cumsum(dB) #Cum sum retorna un vector y cada entrada se convierte en la suma acumulada
+###################
 
-def dif_B(B:np.array)->np.array:
-    """Obtener vector dB o matriz de vectores dB a partir del vector o matriz B"""
-    if B.ndim==1:
-        dB=np.diff(B,prepend=0)
-    else: 
-        dB=np.diff(B,prepend=0,axis=1)
-    return dB
-
-def quadratic_variation(B:np.array):
-    """Devuelve la matriz (o el vector en caso de dimensión 1) con las variaciones cuadráticas de cada fila (mov browniano) de W"""
-    if B.ndim==1:
-        qv=np.cumsum(np.power(np.diff(B,prepend=0),2))
-    else: 
-        qv= np.cumsum(np.power(np.diff(B,prepend=0,axis=0),2),axis=1)
-    return qv
-
-
+############## Simulación en matriz
 #Métodos auxiliares para matriz
 def _get_correlated_dB(dB: np.ndarray, rho: float, dt:Optional[float]=1, random_state: Optional[int] = None) -> np.ndarray:
     """
@@ -102,10 +90,10 @@ def get_B_matrix(
     Recibe:
     n: tamaño deseado por trayectoria.
     d: número de trayectorias.
-    dt: tamaño de paso.
-    rho: correlación (no es par a par, sino corr con la que se simularán los procesos a partir de alguno de los anteriormente simulados )
+    dt (opc): tamaño de paso, default =1.
+    rho (opc): correlación (no es par a par, sino corr con la que se simularán los procesos a partir de alguno de los anteriormente simulados )
     Retorna: 
-    Matriz (d x n): d trayectorias brownianas, cada una de tamaño n.(fila es un prceso)
+    Matriz (d x n): d trayectorias brownianas, cada una de tamaño n (fila es un prceso).
     
     """
     rng = np.random.default_rng(random_state) #Generador
@@ -119,7 +107,22 @@ def get_B_matrix(
             dB_i = _get_correlated_dB(dB_previous, rho, dt=dt,random_state=random_state_i)
         dBs.append(dB_i)
     return np.cumsum(np.asarray(dBs),axis=1) #d vectores fila, se suma por filas.
+####################################
+def dif_B(B:np.array)->np.array:
+    """Obtener vector dB o matriz de vectores dB a partir del vector o matriz B"""
+    if B.ndim==1:
+        dB=np.diff(B,prepend=0)
+    else: 
+        dB=np.diff(B,prepend=0,axis=1)
+    return dB
 
+def quadratic_variation(B:np.array):
+    """Devuelve la matriz (o el vector en caso de dimensión 1) con las variaciones cuadráticas de cada fila (mov browniano) de W"""
+    if B.ndim==1:
+        qv=np.cumsum(np.power(np.diff(B,prepend=0),2))
+    else: 
+        qv= np.cumsum(np.power(np.diff(B,prepend=0,axis=1),2),axis=1)
+    return qv
 
 ####################################################
 #Evaluación de funciones teóricas de esperanza, varianza y covarianza de variables aleatorias B_t.
@@ -165,12 +168,12 @@ def bridge_theoret_mean_var():
     pass
 
 ########## Ruido blanco
-def get_Gaussian_matrix(n:int, d:int, h: int=1, dt:float=1, random_state=None)->np.array:
+def get_w_noise_matrix(n:int, d:int, h: int=1, dt:float=1, random_state=None)->np.array:
     """
     Recibe:
     n: tamaño por trayectoria.
-    d:
-    h: (h<n) tamaño del incremento temporal en número de pasos dt . (h*dt)
+    d: número de trayectorias
+    h: (h<n) incremento temporal en número de pasos dt. (cada uno de tamaño h*dt)
     Retorna:
     Matriz (d x n) con 
     """
