@@ -108,6 +108,9 @@ def get_B_matrix(
         dBs.append(dB_i)
     return np.cumsum(np.asarray(dBs),axis=1) #d vectores fila, se suma por filas.
 ####################################
+def error(matr_teor,matr_hat):
+    return np.absolute(matr_teor-matr_hat)
+
 def dif_B(B:np.array)->np.array:
     """Obtener vector dB o matriz de vectores dB a partir del vector o matriz B"""
     if B.ndim==1:
@@ -130,13 +133,13 @@ def quadratic_variation(B:np.array):
 def mbeu_theoret_mu_cov(tiempos:np.array)->tuple[np.array]:
     """
     Recibe:
-    tiempos: vector de tiempos. ("Verdaderos" índices de los B en las trayectorias)
+    tiempos: vector de tiempos. ("Verdaderos" índices de los B en las trayectorias: los tiempos en los que evaluamos el proceso)
     Retorna:
     Evaluación de función teórica de esperanza y varianza
     """
     s_v,t_v=np.meshgrid(tiempos,tiempos)
     mu_teor=np.zeros(len(tiempos))
-    cov_teor=np.minimum(s_v,t_v)-np.multiply(s_v,t_v)
+    cov_teor=np.minimum(s_v,t_v)
     return mu_teor, cov_teor
     
 
@@ -164,8 +167,17 @@ def get_Bridge_matrix(n:int,d:int=1,random_state: Optional[int]=None)->np.array:
 
 #Propiedades teóricas 
 
-def bridge_theoret_mean_var():
-    pass
+def bridge_theoret_mean_cov(tiempos:np.array)->np.array:
+    """
+    Recibe:
+    tiempos: vector de tiempos. ("Verdaderos" índices de los B en las trayectorias: los tiempos en los que evaluamos el proceso)
+    Retorna:
+    Evaluación de función teórica de esperanza y varianza
+    """
+    s_v,t_v=np.meshgrid(tiempos,tiempos)
+    mu_teor=np.zeros(len(tiempos))
+    cov_teor=np.minimum(s_v,t_v)-np.multiply(s_v,t_v)
+    return mu_teor, cov_teor
 
 ########## Ruido blanco
 def get_w_noise_matrix(n:int, d:int, h: int=1, dt:float=1, random_state=None)->np.array:
