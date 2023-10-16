@@ -103,9 +103,9 @@ def mbeu_theoret_mu_cov(tiempos:np.array)->tuple[np.array]:
     Evaluación de función teórica de esperanza y varianza
     """
     s_v,t_v=np.meshgrid(tiempos,tiempos)
-    mu_teor=np.zeros(len(tiempos))
+    mu_teor_t=np.zeros(len(tiempos))
     cov_teor=np.minimum(s_v,t_v)
-    return mu_teor, cov_teor
+    return mu_teor_t, cov_teor
     
 
 
@@ -141,9 +141,9 @@ def bridge_theoret_mu_cov(tiempos:np.array)->np.array:
     Evaluación de función teórica de esperanza y varianza
     """
     s_v,t_v=np.meshgrid(tiempos,tiempos)
-    mu_teor=np.zeros(len(tiempos))
+    mu_teor_t=np.zeros(len(tiempos))
     cov_teor=np.minimum(s_v,t_v)-np.multiply(s_v,t_v)
-    return mu_teor, cov_teor
+    return mu_teor_t, cov_teor
 
 ################################# Ruido blanco
 def get_w_noise_matrix(n:int, d:int, h: int=1, dt:float=1)->np.array:
@@ -167,14 +167,32 @@ def get_w_noise_matrix(n:int, d:int, h: int=1, dt:float=1)->np.array:
 def w_noise_theoret_mu_cov(tiempos:np.array,h:float=1,dt=1)->tuple[np.array]:
     h_dt=h*dt
     s_v,t_v=np.meshgrid(tiempos,tiempos)
-    mu_teor=np.zeros(len(tiempos))
+    mu_teor_t=np.zeros(len(tiempos))
     cov_teor=(1/h_dt**2)*(np.minimum(s_v+h_dt,t_v+h_dt)-np.minimum(s_v+h_dt,t_v))
-    return mu_teor,cov_teor
+    return mu_teor_t,cov_teor
 
 ########## Movimiento drift
-
+def get_drift_matr(n:int,d:int,mu:float,sigma:float,T:float)->np.array:
+    dt=T/n
+    B=get_B_matrix(n,d,dt=dt)
+    t=np.linspace(0,T,n)
+    drift_matr=mu*t+sigma*B #Broadcast
+    return drift_matr
 
 #Propiedades teóricas
+
+def drift_theoret_mu_cov(tiempos:np.array,mu:float,sigma:float)->np.array:
+    """
+    Recibe:
+    tiempos: vector de tiempos. ("Verdaderos" índices de los B en las trayectorias: los tiempos en los que evaluamos el proceso)
+    Retorna:
+    Evaluación de función teórica de esperanza y varianza
+    """
+    s_v,t_v=np.meshgrid(tiempos,tiempos)
+    mu_teor_t=mu*tiempos
+    cov_teor=(sigma**2)*np.minimum(s_v,t_v)
+    return mu_teor_t, cov_teor
+
 
 ########## Movimiento browniano geométrico
 
