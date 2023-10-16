@@ -22,7 +22,7 @@ de la variable aleatoria B_{j*dt}.
 
 
 #########Movimiento Browniano individual
-def get_dB(n: int, dt: float=1 , random_state: Optional[int] = None) -> np.ndarray:
+def get_dB(n: int, dt: float=1) -> np.ndarray:
     """
     Recibe:
     n: número deseado de incrementos.
@@ -31,12 +31,11 @@ def get_dB(n: int, dt: float=1 , random_state: Optional[int] = None) -> np.ndarr
     Retorna:
     dW: Vector con n incrementos de un MBEU
     """
-    np.random.seed(random_state)
     sample=np.random.normal(0.0, dt**(1/2), size=n-1)#dt es la varianza, n-1 porque agrego luego condición inicial
     dB=np.insert(sample,0,0) #Agrego los estados iniciales como primer vector columna
     return dB
 
-def get_B(n: int, dt: float=1,random_state: Optional[int] = None) -> np.ndarray:
+def get_B(n: int, dt: float=1) -> np.ndarray:
     """
     Recibe:
     n: tamaño de muestras deseadas.
@@ -44,14 +43,14 @@ def get_B(n: int, dt: float=1,random_state: Optional[int] = None) -> np.ndarray:
     Retorna:
     Vector trayectoria de n entrada: sumas acumuladas de los incrementos.
     """
-    dB = get_dB(n,dt=dt,random_state=random_state)  #Cambiar por dB y B
+    dB = get_dB(n,dt=dt)   #Cambiar por dB y B
     
     return np.cumsum(dB) #Cum sum retorna un vector y cada entrada se convierte en la suma acumulada
 ###################
 
 ############## Simulación en matriz
 #Métodos auxiliares para matriz
-def _get_correlated_dB(dB: np.ndarray, rho: float, dt:Optional[float]=1, random_state: Optional[int] = None) -> np.ndarray:
+def _get_correlated_dB(dB: np.ndarray, rho: float, dt:Optional[float]=1) -> np.ndarray:
     """
     Recibe:
     Incrementos de browniano.
@@ -60,31 +59,17 @@ def _get_correlated_dB(dB: np.ndarray, rho: float, dt:Optional[float]=1, random_
     Retorna:
     Vector de incrementos de procesos browniano correlacionado al dB recibido..
     """
-    dB2 = get_dB(len(dB), dt=dt, random_state=random_state)  # genera las d listas de incrementos.
+    dB2 = get_dB(len(dB), dt=dt)  # genera las d listas de incrementos.
     if np.array_equal(dB2, dB):
         # dB no puede ser igual a dB2.
         raise ValueError("Brownian Increment error, try choosing different random state.")
     return rho * dB + np.sqrt(1 - rho ** 2) * dB2
 
-def _vary_random_state_i(random_state: Optional[int], i: int) -> Optional[int]:
-    """Add i to random_state if is int, else return None."""
-    return random_state if random_state is None else random_state + i
-
-def _get_previous_dB(
-    dWs: list[np.ndarray], i: int, rng: np.random.Generator
-) -> np.ndarray:
-    """
-    Elige un proceso dB ya generado.
-    """
-    random_proc_idx = rng.choice(i)
-    return dWs[random_proc_idx]
-
 def get_B_matrix(
     n: int,
     d: int,
     dt:Optional[float]=1,
-    rho: Optional[float] = None,
-    random_state: Optional[int] = None,
+    rho: Optional[float] = None
 ) -> np.ndarray:
     """
     Recibe:
@@ -96,17 +81,17 @@ def get_B_matrix(
     Matriz (d x n): d trayectorias brownianas, cada una de tamaño n (fila es un prceso).
     
     """
-    rng = np.random.default_rng(random_state) #Generador
     dBs: list[np.ndarray] = []
     for i in range(d):
-        random_state_i = _vary_random_state_i(random_state, i)
         if i == 0 or rho is None:
-            dB_i = get_dB(n, dt=dt,random_state=random_state_i)
+            dB_i = get_dB(n, dt=dt)
         else:
-            dB_previous = _get_previous_dB(dBs, i, rng)
-            dB_i = _get_correlated_dB(dB_previous, rho, dt=dt,random_state=random_state_i)
+            dB_previous = dBs[np.random.choice(i)]
+            dB_i = _get_correlated_dB(dB_previous, rho, dt=dt)
         dBs.append(dB_i)
     return np.cumsum(np.asarray(dBs),axis=1) #d vectores fila, se suma por filas.
+
+
 ####################################
 def error(matr_teor,matr_hat):
     return np.absolute(matr_teor-matr_hat)
@@ -148,7 +133,7 @@ def mbeu_theoret_mu_cov(tiempos:np.array)->tuple[np.array]:
 # Movimientos asociados
 #######################################################################################
 ######### Browniano Bridge
-def get_Bridge_matrix(n:int,d:int=1,random_state: Optional[int]=None)->np.array:
+def get_Bridge_matrix(n:int,d:int=1)->np.array:
     """
     Proceso Bridge entre 0 y 1. Al recibir n, se induce dt=1/(n-1)
     Recibe:
@@ -160,14 +145,14 @@ def get_Bridge_matrix(n:int,d:int=1,random_state: Optional[int]=None)->np.array:
     Como T=1 en este proceso, se induce dt=1/n
     Relación índice en arreglo y tiempo: B[i]=B_{i*dt}"""
     dt=1/(n-1)
-    B=get_B_matrix(n,d,dt=dt,random_state=random_state)
+    B=get_B_matrix(n,d,dt=dt)
     time=np.linspace(0,1,n)
     tB_1=np.array([time[i]*B[:,-1] for i in range(n)]).T #B[:,-1] es el vector con cada trayectoria en su t final (asumo 1) Se transpone porque cada elemento de la lista debe ser columna
     return B-tB_1
 
 #Propiedades teóricas 
 
-def bridge_theoret_mean_cov(tiempos:np.array)->np.array:
+def bridge_theoret_mu_cov(tiempos:np.array)->np.array:
     """
     Recibe:
     tiempos: vector de tiempos. ("Verdaderos" índices de los B en las trayectorias: los tiempos en los que evaluamos el proceso)
@@ -179,8 +164,8 @@ def bridge_theoret_mean_cov(tiempos:np.array)->np.array:
     cov_teor=np.minimum(s_v,t_v)-np.multiply(s_v,t_v)
     return mu_teor, cov_teor
 
-########## Ruido blanco
-def get_w_noise_matrix(n:int, d:int, h: int=1, dt:float=1, random_state=None)->np.array:
+################################# Ruido blanco
+def get_w_noise_matrix(n:int, d:int, h: int=1, dt:float=1)->np.array:
     """
     Recibe:
     n: tamaño por trayectoria.
@@ -189,18 +174,20 @@ def get_w_noise_matrix(n:int, d:int, h: int=1, dt:float=1, random_state=None)->n
     Retorna:
     Matriz (d x n) con 
     """
-    B=get_B_matrix(n+h,d,dt=dt,random_state=random_state)
+    h_dt=h*dt
+    B=get_B_matrix(n+h,d,dt=dt)
     if h>=n:
         raise Exception("h>n")
-    White_noise=(B[:,:-h]-B[:,h:])/h
+    White_noise=(B[:,:-h]-B[:,h:])/(h_dt)
     return White_noise
 
 
 #Propiedades teóricas
-def w_noise_theoret_mu_cov(tiempos:np.array,h:float=1)->tuple[np.array]:
+def w_noise_theoret_mu_cov(tiempos:np.array,h:float=1,dt=1)->tuple[np.array]:
+    h_dt=h*dt
     s_v,t_v=np.meshgrid(tiempos,tiempos)
     mu_teor=np.zeros(len(tiempos))
-    cov_teor=(s_v+h-np.minimum(s_v+h,t_v))/h
+    cov_teor=(s_v+h_dt-np.minimum(s_v+h_dt,t_v))/h_dt
     return mu_teor, cov_teor
 
 ########## Movimiento drift
