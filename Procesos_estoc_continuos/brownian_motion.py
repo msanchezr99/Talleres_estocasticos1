@@ -86,31 +86,11 @@ def get_B_matrix(
         if i == 0 or rho is None:
             dB_i = get_dB(n, dt=dt)
         else:
-            dB_previous = dBs[np.random.choice(i)]
+            dB_previous = dBs[np.random.choice(i)]#Elige una fila (una trayectoria)
             dB_i = _get_correlated_dB(dB_previous, rho, dt=dt)
         dBs.append(dB_i)
     return np.cumsum(np.asarray(dBs),axis=1) #d vectores fila, se suma por filas.
 
-
-####################################
-def error(matr_teor,matr_hat):
-    return np.absolute(matr_teor-matr_hat)
-
-def dif_B(B:np.array)->np.array:
-    """Obtener vector dB o matriz de vectores dB a partir del vector o matriz B"""
-    if B.ndim==1:
-        dB=np.diff(B,prepend=0)
-    else: 
-        dB=np.diff(B,prepend=0,axis=1)
-    return dB
-
-def quadratic_variation(B:np.array):
-    """Devuelve la matriz (o el vector en caso de dimensión 1) con las variaciones cuadráticas de cada fila (mov browniano) de W"""
-    if B.ndim==1:
-        qv=np.cumsum(np.power(np.diff(B,prepend=0),2))
-    else: 
-        qv= np.cumsum(np.power(np.diff(B,prepend=0,axis=1),2),axis=1)
-    return qv
 
 ####################################################
 #Evaluación de funciones teóricas de esperanza, varianza y covarianza de variables aleatorias B_t.
@@ -143,7 +123,8 @@ def get_Bridge_matrix(n:int,d:int=1)->np.array:
     Devuelve:
     Matriz con cada fila un proceso browniano Bridge.
     Como T=1 en este proceso, se induce dt=1/n
-    Relación índice en arreglo y tiempo: B[i]=B_{i*dt}"""
+    Relación índice en arreglo y tiempo: B[i]=B_{i*dt}
+    """
     dt=1/(n-1)
     B=get_B_matrix(n,d,dt=dt)
     time=np.linspace(0,1,n)
@@ -187,8 +168,8 @@ def w_noise_theoret_mu_cov(tiempos:np.array,h:float=1,dt=1)->tuple[np.array]:
     h_dt=h*dt
     s_v,t_v=np.meshgrid(tiempos,tiempos)
     mu_teor=np.zeros(len(tiempos))
-    cov_teor=(s_v+h_dt-np.minimum(s_v+h_dt,t_v))/h_dt
-    return mu_teor, cov_teor
+    cov_teor=(1/h_dt**2)*(np.minimum(s_v+h_dt,t_v+h_dt)-np.minimum(s_v+h_dt,t_v))
+    return mu_teor,cov_teor
 
 ########## Movimiento drift
 
@@ -220,3 +201,22 @@ def empiric_mu_cov(B:np.array):
         cov_hat_st=np.cov(B,rowvar=False) #Puedo obtener la estimación de varianzas con np.diag(cov)
     return mu_hat_t, cov_hat_st
 
+#################################### error, tomar diferencias y variación cuadrática
+def error(matr_teor,matr_hat):
+    return np.absolute(matr_teor-matr_hat)
+
+def dif_B(B:np.array)->np.array:
+    """Obtener vector dB o matriz de vectores dB a partir del vector o matriz B"""
+    if B.ndim==1:
+        dB=np.diff(B,prepend=0)
+    else: 
+        dB=np.diff(B,prepend=0,axis=1)
+    return dB
+
+def quadratic_variation(B:np.array):
+    """Devuelve la matriz (o el vector en caso de dimensión 1) con las variaciones cuadráticas de cada fila (mov browniano) de W"""
+    if B.ndim==1:
+        qv=np.cumsum(np.power(np.diff(B,prepend=0),2))
+    else: 
+        qv= np.cumsum(np.power(np.diff(B,prepend=0,axis=1),2),axis=1)
+    return qv
