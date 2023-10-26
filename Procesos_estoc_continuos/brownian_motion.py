@@ -173,6 +173,15 @@ def w_noise_theoret_mu_cov(tiempos:np.array,h:float=1,dt=1)->tuple[np.array]:
 
 ########## Movimiento drift
 def get_drift_matr(n:int,d:int,mu:float,sigma:float,T:float)->np.array:
+    """
+    Recibe:
+    n: tamaño por trayectoria.
+    d: número de trayectorias
+    mu: parámetro de tendencia o drift
+    sigma: parámetro de dispersión
+    Retorna:
+    Matriz (d x n) 
+    """
     dt=T/n
     B=get_B_matrix(n,d,dt=dt)
     t=np.linspace(0,T,n)
@@ -195,12 +204,41 @@ def drift_theoret_mu_cov(tiempos:np.array,mu:float,sigma:float)->np.array:
 
 
 ########## Movimiento browniano geométrico
+def get_geometr_matr(n:int,d:int,alpha:float,lamda:float,T:float)->np.array:
+    """
+    Recibe:
+    n: tamaño por trayectoria.
+    d: número de trayectorias
+    mu: parámetro de tendencia o drift
+    sigma: parámetro de dispersión
+    Retorna:
+    Matriz (d x n) 
+    """
+    dt=T/n
+    B=bm.get_B_matrix(n,d,dt=dt)
+    t=np.linspace(0,T,n)
+    drift_matr=np.exp(alpha*t+lamda*B) #Broadcast
+    return drift_matr
 
 #Propiedades teóricas
 
-##################
+def geometric_theoret_mu_cov(tiempos:np.array,alpha:float,lamda:float)->np.array:
+    """
+    Recibe:
+    tiempos: vector de tiempos. ("Verdaderos" índices de los B en las trayectorias: los tiempos en los que evaluamos el proceso)
+    parámetros alpha y lamda.
+    Retorna:
+    Evaluación de función teórica de esperanza y varianza
+    """
+    s_v,t_v=np.meshgrid(tiempos,tiempos)
+    mu_teor_t=np.exp((alpha+(lamda**2)/2)*tiempos)
+    cov_teor=np.exp((alpha+(lamda**2)/2)*(s_v+t_v))*(np.exp((lamda**2)*np.minimum(s_v,t_v))-1)
+    return mu_teor_t, cov_teor
 
-###Obtención de estadísticos de matriz de datos (d x n) tomando cada columna (tiempo t) como variable:
+############################################################
+
+#######
+# Obtención de estadísticos de matriz de datos (d x n) tomando cada columna (tiempo t) como variable:
 def empiric_mu_cov(B:np.array):
     """
     Recibe: 
