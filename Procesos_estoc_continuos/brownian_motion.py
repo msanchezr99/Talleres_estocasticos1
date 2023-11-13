@@ -31,8 +31,11 @@ def get_dB(n: int, dt: float=1) -> np.ndarray:
     Retorna:
     dW: Vector con n incrementos de un MBEU
     """
-    sample=np.random.normal(0.0, dt**(1/2), size=n-1)#dt es la varianza, n-1 porque agrego luego condición inicial
-    dB=np.insert(sample,0,0) #Agrego los estados iniciales como primer vector columna
+    # sample=np.random.normal(0.0, dt**(1/2), size=n-1)#dt es la varianza, n-1 porque agrego luego condición inicial
+    # dB=np.insert(sample,0,0) #Agrego los estados iniciales como primer vector columna
+    # return dB
+    #Es un vector de diferencias, no de incrementos. Las condiciones iniciales se ponen en el broniano
+    dB=np.random.normal(0.0, dt**(1/2), size=n) #dt es la varianza. 
     return dB
 
 def get_B(n: int, dt: float=1) -> np.ndarray:
@@ -43,8 +46,10 @@ def get_B(n: int, dt: float=1) -> np.ndarray:
     Retorna:
     Vector trayectoria de n entrada: sumas acumuladas de los incrementos.
     """
-    dB = get_dB(n,dt=dt)   #Cambiar por dB y B
-    
+    dB = get_dB(n-1,dt=dt)   #Cambiar por dB y B
+    #Aquí sí agrego condiciones iniciales
+    dB=np.insert(dB,0,0)
+
     return np.cumsum(dB) #Cum sum retorna un vector y cada entrada se convierte en la suma acumulada
 ###################
 
@@ -84,11 +89,12 @@ def get_B_matrix(
     dBs: list[np.ndarray] = []
     for i in range(d):
         if i == 0 or rho is None:
-            dB_i = get_dB(n, dt=dt)
+            dB_i = get_dB(n-1, dt=dt) #Reduzco en uno el tamaño pues luego agrego condiciones iniciales
         else:
             dB_previous = dBs[np.random.choice(i)]#Elige una fila (una trayectoria)
             dB_i = _get_correlated_dB(dB_previous, rho, dt=dt)
         dBs.append(dB_i)
+    dBs=np.insert(dBs,0,0,axis=1) #Inserta 0 en cada inicio de fila (trayectoria)
     return np.cumsum(np.asarray(dBs),axis=1) #d vectores fila, se suma por filas.
 
 
