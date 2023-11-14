@@ -215,6 +215,11 @@ def drift_theoret_mu_cov(tiempos:np.array,mu:float,sigma:float)->np.array:
 ########## Movimiento browniano geométrico
 def get_geometr_matr(n:int,d:int,alpha:float,lamda:float,T:float)->np.array:
     """
+    Devuelve matriz con trayectorias de movimiento browniano. Si se usa para simular solución a 
+    EDE dX_t=mu*X_tdt+sigma*X_t*dW_t los parámetros deben ser: alpha=mu+sigma**2/2, lambda=sigma.
+
+    FALTA PONER CONDICIONES INICIALES Y VERIFICAR QUE SÍ FUNCIONE (Que sí acumule o si toca complementar)
+
     Recibe:
     n: tamaño por trayectoria.
     d: número de trayectorias
@@ -224,10 +229,10 @@ def get_geometr_matr(n:int,d:int,alpha:float,lamda:float,T:float)->np.array:
     Matriz (d x n) 
     """
     dt=T/n
-    B=bm.get_B_matrix(n,d,dt=dt)
+    B=get_B_matrix(n,d,dt=dt)
     t=np.linspace(0,T,n)
-    drift_matr=np.exp(alpha*t+lamda*B) #Broadcast
-    return drift_matr
+    geom_matr=np.exp(alpha*t+lamda*B) #Broadcast
+    return geom_matr
 
 #Propiedades teóricas
 
