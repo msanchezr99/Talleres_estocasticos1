@@ -6,12 +6,15 @@ import seaborn as sns
 
 """
 Convenciones:
-Aunque para plotear python asume columnas como cada trayectoria. Las matrices de los métodos están formadas
+Aunque para plotear python asume columnas como cada trayectoria, las matrices de los métodos están formadas
 por trayectorias en cada fila. Matrices B de tamaño (d x n) = (n_proc x tamaño_muestr)
 
 El proceso de simulación en general será elegir un tiempo máximo T, un número de subintervalos s 
 lo que define dt=T/s e invocar las funciones get con n=s+1 y dt. Aunque dt será 1 por default, puede 
 especificarse dt y n lo que condiciona T=n*dt.
+
+get_dB(s) dará s diferencias brownianas. get_B o get_B_matrix invoca a get_dB y agrega condiciones iniciales 0 para
+las trayectorias.
 
 Por como está implementado (func get_dB), cada entrada de una trayectoria B (de get_B o get_B_matrix)
 B[i] es igual al proceso en el tiempo i*dt: B_{i+dt}.
