@@ -13,8 +13,9 @@ El proceso de simulación en general será elegir un tiempo máximo T, un númer
 lo que define dt=T/s e invocar las funciones get con n=s+1 y dt. Aunque dt será 1 por default, puede 
 especificarse dt y n lo que condiciona T=n*dt.
 
-get_dB(s) dará s diferencias brownianas. get_B o get_B_matrix invoca a get_dB y agrega condiciones iniciales 0 para
+get_dB(s) dará s diferencias brownianas. get_B(n) o get_B_matrix(n,d) invoca a get_dB(s) y agrega condiciones iniciales 0 para
 las trayectorias.
+-->get_dB se debe llamar con el número de subintervalos (incrementos), B naturalmente, con c.i. tendrá un punto más.
 
 Por como está implementado (func get_dB), cada entrada de una trayectoria B (de get_B o get_B_matrix)
 B[i] es igual al proceso en el tiempo i*dt: B_{i+dt}.
