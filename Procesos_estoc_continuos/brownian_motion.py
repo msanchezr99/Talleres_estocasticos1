@@ -192,7 +192,7 @@ def get_drift_matr(n:int,d:int,mu:float,sigma:float,T:float)->np.array:
     Retorna:
     Matriz (d x n) 
     """
-    dt=T/n
+    dt=T/(n-1) ###Sería T/(n-1)
     B=get_B_matrix(n,d,dt=dt)
     t=np.linspace(0,T,n)
     drift_matr=mu*t+sigma*B #Broadcast
