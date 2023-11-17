@@ -270,7 +270,7 @@ def empiric_mu_cov(B:np.array):
     En cada caso, mu_hat_t[i] será la estimación de E(W_{i*dt}) mientras que 
     cov_hat_st[i,j] será estimación de Cov(W_{i*dt},W_{j*dt}) para el dt elegido al momento de simular.
     """
-    if B.ndim==1:
+    if np.squeeze(B).ndim==1:
         raise Exception("Argument not a matrix")
     else: 
         d,n=B.shape
