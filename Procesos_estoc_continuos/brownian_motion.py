@@ -219,12 +219,10 @@ def drift_theoret_mu_cov(tiempos:np.array,mu:float,sigma:float)->np.array:
 
 
 ########## Movimiento browniano geométrico
-def get_geometr_matr(n:int,d:int,alpha:float,lamda:float,T:int)->np.array:
+def get_geometr_matr(G_0:float,n:int,d:int,alpha:float,lamda:float,T:int)->np.array:
     """
     Devuelve matriz con trayectorias de movimiento browniano. Si se usa para simular solución a 
-    EDE dX_t=mu*X_tdt+sigma*X_t*dW_t los parámetros deben ser: alpha=mu+sigma**2/2, lambda=sigma.
-
-    FALTA PONER CONDICIONES INICIALES Y VERIFICAR QUE SÍ FUNCIONE (Que sí acumule o si toca complementar)
+    EDE dX_t=mu*X_tdt+sigma*X_t*dW_t los parámetros deben ser: alpha=mu-sigma**2/2, lambda=sigma.
 
     Recibe:
     n: tamaño por trayectoria.
@@ -235,10 +233,10 @@ def get_geometr_matr(n:int,d:int,alpha:float,lamda:float,T:int)->np.array:
     Retorna:
     Matriz (d x n) 
     """
-    dt=T/n
+    dt=T/(n-1)
     B=get_B_matrix(n,d,dt=dt)
     t=np.linspace(0,T,n)
-    geom_matr=np.exp(alpha*t+lamda*B) #Broadcast
+    geom_matr=G_0*np.exp(alpha*t+lamda*B) #Broadcast
     return geom_matr
 
 #Propiedades teóricas
@@ -311,21 +309,7 @@ def quadratic_variation(B:np.array):
 # Simulación de procesos por solución teórica o esquema numérico
 
 ###Movimiento browniano geométrico
-def teor_solut_GBM(G_0:float,mu:float,sigma:float,n:int,d:int,T:int):
-    """ ####Sirve la función original de get_geom_matrix pero falta ponerle C.I.
-    Calcula matriz de d procesos con n observaciones de movmimientos brownianos geométricos dados los parám y c.i.
-    G_0:condición inicial. Numérico. Todos los procesos inician en ese punto.
-    mu:
-    sigma:
-    n:número de obs
-    d:número de trayectorias
-    T:tiempo máximo.
-    """
-    dt=T/(n-1)
-    time=np.linspace(0,T,n)
-    B=get_B_matrix(n,d,dt)
-    G_teor=G_0*np.exp((mu- sigma**2/2)*time+sigma*B)
-    return G_teor
+
 
 #Esquema Euler-Maruyama
 def EM_geom_brown(G_0:float,mu:float,sigma:float,n:int,d:int,dt:float=1):
