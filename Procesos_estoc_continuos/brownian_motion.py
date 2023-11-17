@@ -312,7 +312,7 @@ def quadratic_variation(B:np.array):
 
 ###Movimiento browniano geométrico
 def teor_solut_GBM(G_0:float,mu:float,sigma:float,n:int,d:int,T:int):
-    """ 
+    """ ####Sirve la función original de get_geom_matrix pero falta ponerle C.I.
     Calcula matriz de d procesos con n observaciones de movmimientos brownianos geométricos dados los parám y c.i.
     G_0:condición inicial. Numérico. Todos los procesos inician en ese punto.
     mu:
