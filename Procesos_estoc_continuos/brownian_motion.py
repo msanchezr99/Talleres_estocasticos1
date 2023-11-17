@@ -243,18 +243,21 @@ def get_geometr_matr(n:int,d:int,alpha:float,lamda:float,T:int)->np.array:
 
 #Propiedades teóricas
 
-def geometric_theoret_mu_cov(tiempos:np.array,alpha:float,lamda:float)->np.array:
+def geometric_theoret_mu_cov(S_0,tiempos:np.array,alpha:float,lamda:float)->np.array:
     """
+    #####PEND: Poner condiciones iniciales !=1, es sólo multiplicar por S_0 en E y por S_0**2 en cov (revisar en notebooks que dependen)
     Recibe:
+    S_0:condiciones iniciales
     tiempos: vector de tiempos. ("Verdaderos" índices de los B en las trayectorias: los tiempos en los que evaluamos el proceso)
     parámetros alpha y lamda.
     Retorna:
     Evaluación de función teórica de esperanza y varianza
     """
     s_v,t_v=np.meshgrid(tiempos,tiempos)
-    mu_teor_t=np.exp((alpha+(lamda**2)/2)*tiempos)
-    cov_teor=np.exp((alpha+(lamda**2)/2)*(s_v+t_v))*(np.exp((lamda**2)*np.minimum(s_v,t_v))-1)
+    mu_teor_t=S_0*np.exp((alpha+(lamda**2)/2)*tiempos)
+    cov_teor=(S_0**2)*np.exp((alpha+(lamda**2)/2)*(s_v+t_v))*(np.exp((lamda**2)*np.minimum(s_v,t_v))-1)
     return mu_teor_t, cov_teor
+
 
 ############################################################
 
