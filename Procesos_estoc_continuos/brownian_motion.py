@@ -297,3 +297,50 @@ def quadratic_variation(B:np.array):
     else: 
         qv= np.cumsum(np.power(np.diff(B,prepend=0,axis=1),2),axis=1)
     return qv
+
+
+
+
+
+
+
+###################################################################################3
+# Simulación de procesos por solución teórica o esquema numérico
+
+###Movimiento browniano geométrico
+def teor_solut_GBM(G_0:float,mu:float,sigma:float,n:int,d:int,T:int):
+    """ 
+    Calcula matriz de d procesos con n observaciones de movmimientos brownianos geométricos dados los parám y c.i.
+    G_0:condición inicial. Numérico. Todos los procesos inician en ese punto.
+    mu:
+    sigma:
+    n:número de obs
+    d:número de trayectorias
+    T:tiempo máximo.
+    """
+    dt=T/(n-1)
+    time=np.linspace(0,T,n)
+    B=get_B_matrix(n,d,dt)
+    G_teor=G_0*np.exp((mu- sigma**2/2)*time+sigma*B)
+    return G_teor
+
+#Esquema Euler-Maruyama
+def EM_geom_brown(G_0:float,mu:float,sigma:float,n:int,d:int,dt:float=1):
+    """
+    Generar matriz (dxn) con d trayectorias de movimientos brownianos geométricos de n observaciones a partir de 
+    discretización de Euler Maruyama.
+    Recibe:
+    G_0: valor de condición inicial para todas las trayectorias 
+    n: número de observaciones por trayectoria.
+    d: número de trayectorias.
+    dt (opcional): diferencial de tiempo.
+    Retorna:
+    Matriz de movimientos brownianos geométricos"""
+    
+    G=np.zeros((d,n))
+    G[:,0]=G_0*np.ones(d)
+    B=get_B_matrix(n,d,dt)
+    dB=np.diff(B,axis=1)
+    for i in range(1,n):
+        G[:,i]=(1+mu*dt)*G[:,i-1]+sigma*G[:,i-1]*dB[:,i-1]
+    return G
