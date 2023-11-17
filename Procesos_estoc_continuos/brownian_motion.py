@@ -4,6 +4,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
+###Pendiente: cambiar uso de dt. Asumo siempre que es una partición precisa (T, n enteros y dt=T/(n-1)). ¿Vale la pena
+###hacer simplemente T float general y tomar dt dependiendo de linspace?:
+# time=linspace(0,T,n) 
+# dt=time[1]-time[0]
+
 """
 Convenciones:
 Aunque para plotear python asume columnas como cada trayectoria, las matrices de los métodos están formadas
@@ -18,7 +23,7 @@ las trayectorias.
 -->get_dB se debe llamar con el número de subintervalos (incrementos), B naturalmente, con c.i. tendrá un punto más.
 
 Por como está implementado (func get_dB), cada entrada de una trayectoria B (de get_B o get_B_matrix)
-B[i] es igual al proceso en el tiempo i*dt: B_{i+dt}.
+B[i] es igual al proceso en el tiempo i*dt: B_{i*dt}.
 Cada fila (B[i,:]) es instancia del proceso estocástico, cada columna (B[:,j]) es instancia
 de la variable aleatoria B_{j*dt}.
 """
@@ -182,7 +187,7 @@ def w_noise_theoret_mu_cov(tiempos:np.array,h:float=1,dt=1)->tuple[np.array]:
     return mu_teor_t,cov_teor
 
 ########## Movimiento drift
-def get_drift_matr(n:int,d:int,mu:float,sigma:float,T:float)->np.array:
+def get_drift_matr(n:int,d:int,mu:float,sigma:float,T:int)->np.array:
     """
     Recibe:
     n: tamaño por trayectoria.
@@ -214,7 +219,7 @@ def drift_theoret_mu_cov(tiempos:np.array,mu:float,sigma:float)->np.array:
 
 
 ########## Movimiento browniano geométrico
-def get_geometr_matr(n:int,d:int,alpha:float,lamda:float,T:float)->np.array:
+def get_geometr_matr(n:int,d:int,alpha:float,lamda:float,T:int)->np.array:
     """
     Devuelve matriz con trayectorias de movimiento browniano. Si se usa para simular solución a 
     EDE dX_t=mu*X_tdt+sigma*X_t*dW_t los parámetros deben ser: alpha=mu+sigma**2/2, lambda=sigma.
@@ -224,8 +229,9 @@ def get_geometr_matr(n:int,d:int,alpha:float,lamda:float,T:float)->np.array:
     Recibe:
     n: tamaño por trayectoria.
     d: número de trayectorias
-    mu: parámetro de tendencia o drift
-    sigma: parámetro de dispersión
+    alpha: parámetro de tendencia o drift
+    lamda: parámetro de dispersión
+    T:tiempo máximo
     Retorna:
     Matriz (d x n) 
     """
