@@ -326,8 +326,13 @@ def EM_geom_brown(G_0:float,mu:float,sigma:float,n:int,d:int,dt:float=1):
     
     G=np.zeros((d,n))
     G[:,0]=G_0*np.ones(d)
+
+    #Implementación E-M sobre S_t
     B=get_B_matrix(n,d,dt)
     dB=np.diff(B,axis=1)
     for i in range(1,n):
-        G[:,i]=(1+mu*dt)*G[:,i-1]+sigma*G[:,i-1]*dB[:,i-1]
-    return G
+        G[:,i]=((1+mu*dt)+sigma*dB[:,i-1])*G[:,i-1]
+    #Implementación alternativa (E-M sobre Y_t=ln(S_t):
+    # G[:,1:]=np.exp((mu-sigma**2/2)*dt+sigma*dB)
+    # G=np.cumprod(G,axis=1)
+    return G 
