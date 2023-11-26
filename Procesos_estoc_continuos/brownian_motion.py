@@ -31,6 +31,9 @@ de la variable aleatoria B_{j*dt}.
 
 
 #########Movimiento Browniano individual
+
+
+##Posible: cambiar por multivariate_normal con media vector zeros y matriz de covarianzas con dt en la diagonal y rho en las entradas no diagonales. ¿Estaría bien?
 def get_dB(n: int, dt: float=1) -> np.ndarray:
     """
     Recibe:
@@ -64,6 +67,7 @@ def get_B(n: int, dt: float=1) -> np.ndarray:
 
 ############## Simulación en matriz
 #Métodos auxiliares para matriz
+##Puedo quitarlo
 def _get_correlated_dB(dB: np.ndarray, rho: float, dt:Optional[float]=1) -> np.ndarray:
     """
     Recibe:
