@@ -284,12 +284,13 @@ def error(matr_teor,matr_hat):
     return np.absolute(matr_teor-matr_hat)
 
 def dif_B(B:np.array)->np.array:
+    ####################Asunto a reslover: Tamaño del vector dB obtenido será igual
     """Obtener vector dB o matriz de vectores dB a partir del vector o matriz B"""
     if B.ndim==1:
         dB=np.diff(B,prepend=0)
     else: 
         dB=np.diff(B,prepend=0,axis=1)
-    return dB
+    return dB##########
 
 def quadratic_variation(B:np.array):
     """Devuelve la matriz (o el vector en caso de dimensión 1) con las variaciones cuadráticas de cada fila (mov browniano) de W"""
