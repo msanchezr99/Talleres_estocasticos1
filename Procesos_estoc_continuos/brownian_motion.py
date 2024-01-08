@@ -11,14 +11,14 @@ import seaborn as sns
 
 """
 Convenciones:
-Aunque para plotear python asume columnas como cada trayectoria, las matrices de los métodos están formadas
-por trayectorias en cada fila. Matrices B de tamaño (d x n) = (n_proc x tamaño_muestr)
+#####Cambiar a trayectoria por columnas: deben retornar matrices de tamaño (s x d) =(tamaño_trayectoria x n_procesos)
 
-El proceso de simulación en general será elegir un tiempo máximo T, un número de subintervalos s 
-lo que define dt=T/s e invocar las funciones get con n=s+1 y dt. Aunque dt será 1 por default, puede 
+
+El proceso de simulación en general será elegir un tiempo máximo T, un número de subintervalos n 
+lo que define dt=T/n. Con esto, invocar las funciones get con s=n+1 (número de puntos) y dt. Aunque dt será 1 por default, puede 
 especificarse dt y n lo que condiciona T=n*dt.
 
-get_dB(s) dará s diferencias brownianas. get_B(n) o get_B_matrix(n,d) invoca a get_dB(s) y agrega condiciones iniciales 0 para
+get_dB(n) dará n diferencias brownianas. get_B(s) o get_B_matrix(s,d) invoca a get_dB(n) y agrega condiciones iniciales 0 para
 las trayectorias.
 -->get_dB se debe llamar con el número de subintervalos (incrementos), B naturalmente, con c.i. tendrá un punto más.
 
